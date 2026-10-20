@@ -38,6 +38,7 @@ public class MainActivity extends Activity {
     private Button shizukuButton;
     private TextView overlayStatus;
     private Button overlayButton;
+    private Button overlayAltButton;
     private Spinner profileSpinner;
     private Button startButton;
     private TextView runStatus;
@@ -127,6 +128,13 @@ public class MainActivity extends Activity {
         overlayButton.setOnClickListener(v -> startActivity(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                 Uri.parse("package:" + getPackageName()))));
         c2.addView(overlayButton, Ui.matchWrap(this, 10));
+        overlayAltButton = Ui.button(this, "لم تجده؟ افتح إعدادات التطبيق", Ui.NEUTRAL);
+        overlayAltButton.setOnClickListener(v -> {
+            toast("اختر «الظهور فوق التطبيقات» أو «النوافذ المنبثقة» وفعّله");
+            startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                    Uri.parse("package:" + getPackageName())));
+        });
+        c2.addView(overlayAltButton, Ui.matchWrap(this, 8));
         root.addView(c2, Ui.matchWrap(this, 12));
 
         // Step 3: profile
@@ -237,9 +245,10 @@ public class MainActivity extends Activity {
         if (!shizukuGranted()) shizukuStatus.setTextColor(Ui.WARN);
 
         boolean overlay = Settings.canDrawOverlays(this);
-        overlayStatus.setText(overlay ? "مسموح ✓" : "مطلوب لإظهار الفقاعة ومحرر الأزرار فوق اللعبة.");
+        overlayStatus.setText(overlay ? "مسموح ✓" : "مطلوب لإظهار الفقاعة فوق اللعبة. في القائمة ابحث عن «محاكي ماوس» (قد يكون في آخرها).");
         overlayStatus.setTextColor(overlay ? Ui.ACCENT : Ui.WARN);
         overlayButton.setVisibility(overlay ? View.GONE : View.VISIBLE);
+        overlayAltButton.setVisibility(overlay ? View.GONE : View.VISIBLE);
 
         boolean running = OverlayService.running;
         startButton.setText(running ? "إيقاف" : "تشغيل");
