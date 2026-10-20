@@ -15,6 +15,7 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.HorizontalScrollView;
+import android.widget.ScrollView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -34,6 +35,17 @@ public class EditorView extends FrameLayout {
 
     private static final int ASSIGN_TAP = -1;
     private static final int ASSIGN_TOGGLE = -2;
+    /** On-screen keyboard for assigning keys without a physical keyboard: label, Linux key code. */
+    private static final Object[][] KEYBOARD = {
+            {"1", 2, "2", 3, "3", 4, "4", 5, "5", 6, "6", 7, "7", 8, "8", 9, "9", 10, "0", 11},
+            {"Q", 16, "W", 17, "E", 18, "R", 19, "T", 20, "Y", 21, "U", 22, "I", 23, "O", 24, "P", 25},
+            {"A", 30, "S", 31, "D", 32, "F", 33, "G", 34, "H", 35, "J", 36, "K", 37, "L", 38},
+            {"Z", 44, "X", 45, "C", 46, "V", 47, "B", 48, "N", 49, "M", 50, "`", 41},
+            {"Space", 57, "Shift", 42, "Ctrl", 29, "Alt", 56, "Tab", 15},
+            {"Esc", 1, "Enter", 28, "Caps", 58, "Back", 14},
+            {"↑", 103, "←", 105, "↓", 108, "→", 106},
+            {"F1", 59, "F2", 60, "F3", 61, "F4", 62, "F5", 63, "F6", 64},
+    };
     private static final String[] DIR_NAMES = {"أعلى", "يسار", "أسفل", "يمين"};
 
     private final Profile profile;
@@ -47,6 +59,7 @@ public class EditorView extends FrameLayout {
     private final float tapRadius;
 
     private final LinearLayout panel;
+    private final ScrollView panelScroll;
     private Button toggleButton;
 
     private Element selected;
@@ -91,10 +104,15 @@ public class EditorView extends FrameLayout {
         panel.setBackground(Ui.rounded(Color.argb(240, 27, 32, 39), Ui.dp(c, 16)));
         int p = Ui.dp(c, 14);
         panel.setPadding(p, p, p, p);
-        panel.setVisibility(GONE);
         // Swallow touches so they don't reach the canvas underneath.
         panel.setOnTouchListener((v, e) -> true);
-        addView(panel, new LayoutParams(Ui.dp(c, 330), LayoutParams.WRAP_CONTENT, Gravity.CENTER));
+        panelScroll = new ScrollView(c);
+        panelScroll.addView(panel);
+        panelScroll.setVisibility(GONE);
+        LayoutParams plp = new LayoutParams(Ui.dp(c, 360), LayoutParams.WRAP_CONTENT, Gravity.CENTER);
+        plp.topMargin = Ui.dp(c, 56);
+        plp.bottomMargin = Ui.dp(c, 8);
+        addView(panelScroll, plp);
     }
 
     // ---------- toolbar ----------
@@ -303,7 +321,7 @@ public class EditorView extends FrameLayout {
     private void hidePanel() {
         selected = null;
         assigning = false;
-        panel.setVisibility(GONE);
+        panelScroll.setVisibility(GONE);
         invalidate();
     }
 
@@ -337,7 +355,8 @@ public class EditorView extends FrameLayout {
 
     private void showPanelFor(final Element e) {
         panel.removeAllViews();
-        panel.setVisibility(VISIBLE);
+        panelScroll.setVisibility(VISIBLE);
+        panelScroll.scrollTo(0, 0);
         if (e.type == Element.TAP) {
             panelTitle("زر على الشاشة: " + e.label);
             LinearLayout r = panelRow();
@@ -399,9 +418,23 @@ public class EditorView extends FrameLayout {
         assignSlot = slot;
         assigning = true;
         panel.removeAllViews();
-        panel.setVisibility(VISIBLE);
-        panelTitle("اضغط الآن زراً على الكيبورد");
-        TextView hint = Ui.text(getContext(), "أو اختر زراً من الماوس:", 13, Ui.MUTED, false);
+        panelScroll.setVisibility(VISIBLE);
+        panelScroll.scrollTo(0, 0);
+        panelTitle("اختر الزر");
+        TextView kbHint = Ui.text(getContext(), "اضغطه على الكيبورد الحقيقي، أو اختره من هنا:", 13, Ui.MUTED, false);
+        kbHint.setGravity(Gravity.CENTER);
+        panel.addView(kbHint, Ui.matchWrap(getContext(), 6));
+        for (Object[] row : KEYBOARD) {
+            LinearLayout r = panelRow();
+            for (int i = 0; i < row.length; i += 2) {
+                final String name = (String) row[i];
+                final int code = (Integer) row[i + 1];
+                Button b = rowButton(r, name, Ui.NEUTRAL, v -> assign(code, name));
+                b.setTextSize(name.length() > 2 ? 11 : 14);
+                b.setPadding(0, Ui.dp(getContext(), 8), 0, Ui.dp(getContext(), 8));
+            }
+        }
+        TextView hint = Ui.text(getContext(), "أزرار الماوس:", 13, Ui.MUTED, false);
         hint.setGravity(Gravity.CENTER);
         panel.addView(hint, Ui.matchWrap(getContext(), 6));
         int[][] rows = {
