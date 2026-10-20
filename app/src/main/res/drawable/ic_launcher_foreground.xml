@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A mouse outline with a green scroll wheel, centered in the 108dp adaptive-icon canvas. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#ECEFF3"
+        android:strokeWidth="4"
+        android:pathData="M54,32 C66,32 72,40 72,50 L72,62 C72,72 64,78 54,78 C44,78 36,72 36,62 L36,50 C36,40 42,32 54,32 Z" />
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#ECEFF3"
+        android:strokeWidth="3"
+        android:pathData="M37,52 L71,52 M54,32 L54,52" />
+    <path
+        android:fillColor="#2FD27F"
+        android:pathData="M51,38 L57,38 L57,47 L51,47 Z" />
+</vector>
